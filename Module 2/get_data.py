@@ -8,18 +8,24 @@ import os
 def download_file(url, file_name):
     # TODO: Download to pwd
     response = requests.get(url)
-    print(response)
-   # if response.status_code == 200:
-    #    cwd = os.getcwd()
 
-    # TODO: Check extension, if it is zip
-    # Call unzip_file()
-    unzip_file(file_name)
+    if response.status_code == 200:
+        cwd = os.getcwd()
+        filepath = os.path.join(cwd, file_name)
+        with open(filepath, "wb") as file:
+            file.write(response.content)
+        if type(file_name) == zip:
+            unzip_file(file_name)
+
+        print(f'File downloaded to: {filepath}')
+    else:
+        print(f'Error downloading file: {response.status_code}')
 
     pass
 
 def unzip_file(file_name):
     # TODO: Unzip file
+    
     pass
 
 
