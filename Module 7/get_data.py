@@ -1,80 +1,86 @@
-"""
-Download data from a URL and save it to a local file. When needed, the file will be extracted from compressed format.
-"""
+#!/usr/bin/env python3
+# -*- coding: UTF-8 -*-
 
-import pandas as pd
-import numpy as np
+"""
+CS 4580 - Assignment 5. Titanic Crew Analysis
+"""
+import sys, os
 import requests
-import shutil
-import os, sys
-import zipfile
+import pandas as pd
+# from sklearn.preprocessing import LabelEncoder
+# import matplotlib.pyplot as plt
 
-SERVER_URL = 'http://icarus.cs.weber.edu/~hvalle/cs4580/data'
+# Constants
+ICARUS_CS4580_DATASET_URL = 'http://icarus.cs.weber.edu/~hvalle/cs4580/data'
+DATA_FOLDER = 'data'
+    
 
-def extract_zip_file(zip_path):
-    """Extract a ZIP file to the current working directory.
-
-    Args:
-        zip_path (str): Zip file absolute path
+def download_dataset(url, data_file, data_folder=DATA_FOLDER):
     """
-
-    print(f"Extracting {zip_path}")
-    # Get the current working directory
-    extract_path = os.getcwd()
-
-    # Open the zip file
-    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-        # Extract all the contents to the current working directory
-        zip_ref.extractall(extract_path)
-        print(f"File unzipped successfully and extracted to {extract_path}")
-        # List the extracted file
-        print(f"Extracted files: {zip_ref.namelist()}")
-    # Delete the zip file
-    os.remove(zip_path)
-
-#TODO: Create a function to download the files from Kaggle directly by passing the dataset name
-
-#def download_kaggle(set_name):
- #   """Download a Kaggle dataset and save it to a local file.
-
-  #  Args:
-   #     set_name (API command): API command from desired dataset
-    #"""
-
-
-def download_dataset(url, dataset_file):
-    """_Download a ZIP file from a URL and save it to a local file.
-
-    Args:
-        url (url): File URL to download 
+    Downloads a dataset from a specified URL and saves it to a local directory.
+    Parameters:
+    url (str): The base URL where the dataset is hosted.
+    data_file (str): The name of the dataset file to be downloaded.
+    data_folder (str): The name of the data folder to store data
+    Returns:
+    None
+    Side Effects:
+    - Creates a directory if it does not exist.
+    - Downloads the dataset file and saves it to the specified directory.
+    - Prints messages indicating the status of the download process.
+    Notes:
+    - If the dataset file already exists in the specified directory, the function will not download it again.
+    - If the download fails, an error message will be printed.
     """
-    # Get the current working directory
-    dest_path = os.path.join(os.getcwd(), os.path.basename(url))
+    
+    # Check if the data folder exists and file_path is a valid path
+    if not os.path.exists(data_folder):
+        os.makedirs(data_folder)
+        print(f'Created folder {data_folder}')
+    # Check if the file already exists
+    data_folder = os.path.join(data_folder, data_file)
+    if os.path.exists(data_folder):
+        print(f'Dataset {data_file} already exists in {data_folder}')
+        return
 
-    # Send a GET request to the URl
-    response = requests.get(url, stream=True)
-
-    # Check if the request was successful
+    # Include file name to url server address
+    url = f'{url}/{data_file}'
+    # Download the dataset from the server to DATA_FOLDER
+    response = requests.get(url)
     if response.status_code == 200:
-        #open the destination file in write-binary mode
-        with open(dest_path, 'wb') as out_file:
-            # Copy the response content to the destination file
-            shutil.copyfileobj(response.raw, out_file)
-        print(f"File downloaded successfully and saved to {dest_path}")
+        with open(data_folder, 'wb') as f:
+            f.write(response.content)
+        print(f'Downloaded dataset {data_file} to {data_folder}')
     else:
-        print(f"Failed to download file. Status code: {response.status_code}")
+        print(f'Error downloading dataset {data_file} from {url}')
+    
 
-    # Check file extension. If it is a ZIP file, extract it
-    if dest_path.endswith('.zip'):
-        extract_zip_file(dest_path)
 
 def load_data(file_path, index_col=None):
+    """
+    Load data from a CSV file into a pandas DataFrame.
+
+    Parameters:
+    file_path (str): The path to the CSV file.
+    index_col (str): Optional column for DataFrame index
+
+    Returns:
+    DataFrame: Returns a pandas DataFrame if the file exists and is a valid CSV file.
+
+    Raises:
+    ValueError: If the file is not a valid CSV file.
+    FileNotFoundError: If the file does not exist.
+    """
+    # Check if file is csv format
     if not file_path.endswith('.csv'):
         print(f'File {file_path} is not a valid CSV file')
         raise ValueError
+    # Check if data is a valid file path or raise an error
     if not os.path.exists(file_path):
         print(f'File {file_path} does not exist')
         raise FileNotFoundError
+
+    # Load the data into a DataFrame
     if index_col:
         df = pd.read_csv(file_path, index_col=index_col)
     else:
@@ -83,23 +89,19 @@ def load_data(file_path, index_col=None):
     return df
 
 
+
 def main():
-    """
-    TBD: Method DocString
-    """
-
-    # If no arguments are provided, print a usage message
-    # if len(sys.argv) < 2:
-    #     print("Usage: python download_data.py <data_file>")
-    #     sys.exit(1)
-
-    # data01 = f'{SERVER_URL}/pandas01Data.zip'
-    #Take data file as input parameter
-    data_file = 'movies.csv'
-    print(f"Data file: {data_file}")
-    data01 = f'{SERVER_URL}/{data_file}'
-    download_dataset(data01, data_file)
+    # TASK 1: Get dataset from server
+    print(f'Task 1: Download dataset from server')
+    dataset_file = 'movies.csv'
+    download_dataset(ICARUS_CS4580_DATASET_URL, dataset_file)
+    # TASK 2: Load  data_file into a DataFrame
+    print(f'Task 2: Load weather data into a DataFrame')
+    data_file = f'{DATA_FOLDER}/{dataset_file}'
     data = load_data(data_file, index_col='IMDB_id')
+    print(f'Loaded {len(data)} records')
+    # TODO: The rest of your code goes here
+
 
 
 if __name__ == '__main__':
