@@ -121,3 +121,56 @@ $$
 where
 - $ A \cdot B$ is the dot product of vectors $A$ and $B$
 - $|A|$ and $|B|$ are the magnitude (or Euclidean norms) of vectors $A$ and $B$
+
+
+### KNN Combining Metrics and Filtering Conditions
+
+Two main concerns with 'filtering':
+- Make too complicated (hard SQL queries)
+- Too strict (end up with no results)
+
+Combine `metrics` to generate `one` result:
+- Weight each metric
+    - Should metrics contribute equally? (50%-50%, 80%-20%)
+- Normalization of the combine metric
+    - Make sure they have the same range
+
+For our example, we will use: 
+- `Cosine`: Use 20% of the `plot`
+- `Weighted Jaccard`: Use 80% of the `genres`
+
+```python
+# See 
+cosine_and_weighted_jaccard()
+```
+
+## Prediction Metrics
+
+A `prediction` is a simple guess about what is going to transpire. One prediction is `yes` or `no`.
+
+How do we measure `accuracy` of the prediction?
+
+```python
+accuracy_metric.py
+```
+
+### Confusion Matrix
+It is performed to measure how well your classification model is. The model could be `binary` or multi-class. Each entry in a confusion matrix represents a specific combination of `predicted vs actual` classes.
+
+For binary classification, you have `four` parts:
+
+|       | Predicted Positive | Predicted Negative |
+|-------|--------------------|--------------------|
+|Actual Positive | True Positive (TP) | False Negative (FN) |
+|Actual Negative | False Positive (FP) | True Negative (TN) |
+
+Key metrics:
+- `Accuracy` = $\frac{{TP + TN}}{{TP + TN + FP + FN}}$
+- `Precision` = $\frac{{TP}}{{TP + FP}}$ (useful for imbalance classes)
+- `Recall` (or Sensitivity) = $\frac{{TP}}{{TP + FN}}$
+- `F1 Score` = $\2 \times \frac{{Precision \times Recall}}{{Precision + Recall}}$ (harmonic mean of Precision and Recall)
+
+```python
+# See
+confusion_matrix.py
+```
